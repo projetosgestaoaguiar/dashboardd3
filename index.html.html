@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard DRE 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#0f1117;--s:#1a1d27;--b:#2e3247;--t:#e2e8f0;--m:#8892a4;
+  --nep:#4f7cff;--hol:#a855f7;--gn:#22c55e;--rd:#ef4444;--pv:#f59e0b}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--t);font-family:'Segoe UI',system-ui,sans-serif;font-size:13px}
+header{background:var(--s);border-bottom:1px solid var(--b);padding:13px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+header h1{font-size:1rem;font-weight:700}
+.pills{display:flex;gap:5px;flex-wrap:wrap}
+.pill{font-size:.67rem;padding:3px 9px;border-radius:20px;background:#222535;border:1px solid var(--b);color:var(--m)}
+.pill.r{color:#93b4ff;border-color:#4f7cff44}.pill.p{color:#fbbf24;border-color:#f59e0b44}
+nav{display:flex;padding:11px 22px 0;border-bottom:1px solid var(--b);gap:2px;overflow-x:auto}
+nav button{background:none;border:none;color:var(--m);padding:8px 15px;cursor:pointer;font-size:.8rem;font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+nav button.active{color:var(--t);border-bottom-color:#4f7cff}
+nav button:hover:not(.active){color:var(--t)}
+.tab{display:none;padding:18px 22px}.tab.active{display:block}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:16px}
+.kpi{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:11px 13px}
+.kpi .l{font-size:.63rem;color:var(--m);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.kpi .v{font-size:1.15rem;font-weight:700}
+.kpi .s{font-size:.65rem;color:var(--m);margin-top:3px}
+.tag{display:inline-block;font-size:.62rem;padding:2px 6px;border-radius:20px;margin-top:4px;font-weight:600}
+.up{background:rgba(34,197,94,.15);color:#22c55e}.dn{background:rgba(239,68,68,.15);color:#ef4444}.wn{background:rgba(245,158,11,.15);color:#f59e0b}
+.ch2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.box{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:14px}
+.box h3{font-size:.68rem;color:var(--m);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px}
+.box canvas{max-height:195px}
+.tbox{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:14px;overflow-x:auto;margin-bottom:14px}
+.tbox h3{font-size:.68rem;color:var(--m);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px}
+table{width:100%;border-collapse:collapse;min-width:860px}
+th{text-align:right;padding:5px 6px;color:var(--m);font-size:.63rem;font-weight:600;text-transform:uppercase;border-bottom:1px solid var(--b);white-space:nowrap}
+th:first-child{text-align:left;min-width:165px}
+th.rh{color:#93b4ff}.th.ph{color:#fbbf24}
+td{padding:5px 6px;border-bottom:1px solid rgba(255,255,255,.03);text-align:right;white-space:nowrap}
+td:first-child{text-align:left}
+td.rc{background:rgba(79,124,255,.06);font-weight:700}
+td.pc{background:rgba(245,158,11,.06);font-weight:700;color:#c8913a}
+td.tc{font-weight:700}
+tr.sec td{background:rgba(255,255,255,.02);color:var(--m);font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.3px;padding-top:9px;padding-bottom:2px}
+tr.sub td:first-child{padding-left:14px;color:var(--m)}
+tr:hover:not(.sec) td{background:rgba(255,255,255,.02)}
+.pos{color:#22c55e}.neg{color:#ef4444}.bold{font-weight:700}
+@media(max-width:760px){.ch2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <h1>📊 Dashboard DRE — D3 Projetos 2026</h1>
+  <div class="pills">
+    <span class="pill r">● Jan–Abr Realizado</span>
+    <span class="pill p">◌ Mai–Dez Previsto</span>
+    <span class="pill">Ref. Abril 2026</span>
+  </div>
+</header>
+<nav>
+  <button class="active" onclick="ST('c',this)">Consolidado</button>
+  <button onclick="ST('n',this)">DRE Nepomuk</button>
+  <button onclick="ST('h',this)">DRE Hollywood II</button>
+  <button onclick="ST('p',this)">DRE Projetos</button>
+  <button onclick="ST('fc',this)">Fluxo de Caixa</button>
+</nav>
+
+<!-- tabs: only containers, no tables yet -->
+<div id="tab-c" class="tab active">
+  <div class="kpis">
+    <div class="kpi"><div class="l">Rec. Bruta 2026 — Nepomuk</div><div class="v" style="color:var(--nep)">R$ 1,753M</div><div class="s">Real. R$561K + Prev. R$1,192M</div></div>
+    <div class="kpi"><div class="l">Rec. Bruta 2026 — Hollywood</div><div class="v" style="color:var(--hol)">R$ 1,690M</div><div class="s">Real. R$521K + Prev. R$1,169M</div></div>
+    <div class="kpi"><div class="l">EBITDA 2026 — Nepomuk</div><div class="v pos">R$ 1,010M</div><div class="s">Real. R$188K + Prev. R$1,010M</div><span class="tag up">↑ Crescendo</span></div>
+    <div class="kpi"><div class="l">EBITDA 2026 — Hollywood</div><div class="v pos">R$ 194K</div><div class="s">Real. –R$275K + Prev. R$469K</div><span class="tag wn">Recover. Set+</span></div>
+    <div class="kpi"><div class="l">Lucro Líq. 2026 — Nepomuk</div><div class="v neg">–R$ 716K</div><div class="s">Depreciação + impostos sazonais</div></div>
+    <div class="kpi"><div class="l">Lucro Líq. 2026 — Hollywood</div><div class="v neg">–R$ 2,127M</div><div class="s">Desp. financeiras + depreciação</div></div>
+  </div>
+  <div class="ch2">
+    <div class="box"><h3>Receita Bruta Mensal</h3><canvas id="c_rb"></canvas></div>
+    <div class="box"><h3>EBITDA Mensal</h3><canvas id="c_eb"></canvas></div>
+  </div>
+  <div class="tbox"><h3>Consolidado (Nepomuk + Hollywood II)</h3><table id="tc"></table></div>
+</div>
+
+<div id="tab-n" class="tab">
+  <div class="kpis">
+    <div class="kpi"><div class="l">Rec. Bruta Jan–Abr</div><div class="v pos">R$ 561K</div><div class="s">Realizado</div></div>
+    <div class="kpi"><div class="l">Rec. Bruta Mai–Dez</div><div class="v" style="color:var(--pv)">R$ 1,192M</div><div class="s">Previsto — Média R$149K/mês</div></div>
+    <div class="kpi"><div class="l">EBITDA Jan–Abr</div><div class="v pos">R$ 188K</div><div class="s">Margem média ~35%</div></div>
+    <div class="kpi"><div class="l">EBITDA Mai–Dez</div><div class="v" style="color:var(--pv)">R$ 1,010M</div><div class="s">Média R$126K/mês</div><span class="tag up">↑ Forte</span></div>
+    <div class="kpi"><div class="l">Custo Direto Médio</div><div class="v neg">R$ 57K/mês</div><div class="s">O&M ~R$25K + TUSD ~R$30K</div></div>
+    <div class="kpi"><div class="l">Lucro Líq. Total 2026</div><div class="v neg">–R$ 716K</div><div class="s">Depreciação R$44K/mês</div></div>
+  </div>
+  <div class="ch2">
+    <div class="box"><h3>Receita Bruta + EBITDA</h3><canvas id="n_rb"></canvas></div>
+    <div class="box"><h3>Lucro Líquido</h3><canvas id="n_ll"></canvas></div>
+  </div>
+  <div class="tbox"><h3>DRE Nepomuk — Detalhado Jan–Dez 2026</h3><table id="tn"></table></div>
+</div>
+
+<div id="tab-h" class="tab">
+  <div class="kpis">
+    <div class="kpi"><div class="l">Rec. Bruta Jan–Abr</div><div class="v" style="color:var(--hol)">R$ 521K</div><div class="s">Jan R$438K | Fev–Abr ~R$28K</div></div>
+    <div class="kpi"><div class="l">Rec. Bruta Mai–Dez</div><div class="v" style="color:var(--pv)">R$ 1,169M</div><div class="s">Recuperação a partir de Set</div></div>
+    <div class="kpi"><div class="l">EBITDA Jan–Abr</div><div class="v neg">–R$ 275K</div><div class="s">Custo fixo > Receita Fev–Abr</div><span class="tag dn">Crítico</span></div>
+    <div class="kpi"><div class="l">EBITDA Mai–Dez</div><div class="v" style="color:var(--pv)">R$ 469K</div><div class="s">1º positivo: Set (R$129K)</div><span class="tag wn">Virada Set+</span></div>
+    <div class="kpi"><div class="l">Custo Direto Fixo</div><div class="v neg">~R$ 84K/mês</div><div class="s">TUSD R$45K + O&M R$38K</div></div>
+    <div class="kpi"><div class="l">Lucro Líq. Total 2026</div><div class="v neg">–R$ 2,127M</div><div class="s">Depr. R$132K/mês + Desp.Fin.</div></div>
+  </div>
+  <div class="ch2">
+    <div class="box"><h3>Receita Bruta vs Custos Diretos</h3><canvas id="h_rc"></canvas></div>
+    <div class="box"><h3>EBITDA Mensal</h3><canvas id="h_eb"></canvas></div>
+  </div>
+  <div class="tbox"><h3>DRE Hollywood II — Detalhado Jan–Dez 2026</h3><table id="th"></table></div>
+</div>
+
+<div id="tab-p" class="tab">
+  <div class="kpis">
+    <div class="kpi"><div class="l">Investimentos Jan–Abr</div><div class="v neg">R$ 94.500</div><div class="s">Hollywood + Norsol</div></div>
+    <div class="kpi"><div class="l">Investimentos Mai–Dez</div><div class="v" style="color:var(--pv)">R$ 391.607</div><div class="s">Pico: Jun, Jul e Nov</div></div>
+    <div class="kpi"><div class="l">Despesas Adm. Jan–Abr</div><div class="v neg">R$ 4.823</div><div class="s">Realizado</div></div>
+    <div class="kpi"><div class="l">Despesas Adm. Mai–Dez</div><div class="v" style="color:var(--pv)">R$ 40.000</div><div class="s">R$5.000/mês</div></div>
+    <div class="kpi"><div class="l">Entradas Previstas 2026</div><div class="v pos">R$ 64.172</div><div class="s">Concentrado em Dezembro</div></div>
+    <div class="kpi"><div class="l">Res. Acumulado Dez</div><div class="v pos">R$ 63.387</div><div class="s">Caixa final projetado</div></div>
+  </div>
+  <div class="ch2">
+    <div class="box"><h3>Resultado Operacional Mensal</h3><canvas id="p_rs"></canvas></div>
+    <div class="box"><h3>Investimentos Mensais</h3><canvas id="p_iv"></canvas></div>
+  </div>
+  <div class="tbox"><h3>DRE D3 Projetos — Jan–Dez 2026</h3><table id="tp"></table></div>
+</div>
+
+<div id="tab-fc" class="tab">
+  <div class="kpis">
+    <div class="kpi"><div class="l">Caixa Final Abr — Nepomuk</div><div class="v pos">R$ 2.694</div><div class="s">Prev. Dez: R$50.000</div></div>
+    <div class="kpi"><div class="l">Caixa Final Abr — Hollywood</div><div class="v pos">R$ 58.142</div><div class="s">Prev. Dez: R$50.000</div></div>
+    <div class="kpi"><div class="l">Aplicações Financeiras Abr</div><div class="v" style="color:var(--hol)">R$ 542K</div><div class="s">Hollywood — CDB + BNB</div></div>
+    <div class="kpi"><div class="l">Aportes D3→Hollywood Jan–Abr</div><div class="v neg">R$ 132.500</div><div class="s">Prev. Mai–Set: R$248.386</div></div>
+    <div class="kpi"><div class="l">Aportes D3→Nepomuk Jan–Abr</div><div class="v">R$ 0</div><div class="s">Prev. Jun+Nov: R$139.718</div></div>
+    <div class="kpi"><div class="l">Posição Financeira Total Abr</div><div class="v pos">R$ 613K</div><div class="s">Caixa + Aplicações do Grupo</div></div>
+  </div>
+  <div class="ch2">
+    <div class="box"><h3>Caixa Final Mensal — Nepomuk e Hollywood</h3><canvas id="fc_cx"></canvas></div>
+    <div class="box"><h3>Aportes D3 Projetos → Subsidiárias</h3><canvas id="fc_ap"></canvas></div>
+  </div>
+  <div class="tbox"><h3>Fluxo de Caixa — Nepomuk (Jan–Dez 2026)</h3><table id="tnfc"></table></div>
+  <div class="tbox"><h3>Fluxo de Caixa — Hollywood II (Jan–Dez 2026)</h3><table id="thfc"></table></div>
+  <div class="tbox"><h3>Fluxo de Caixa Integrado — Grupo D3 (Jan–Dez 2026)</h3><table id="tifc"></table></div>
+</div>
+
+<script>
+// ── DADOS ─────────────────────────────────────────────────────────
+const M=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const C=4;
+const NEP={
+  rb:  [109601,97289,189418,164804,157911,179643,152562,166216,215136,212822,223006,245070],
+  pis: [3632,4000,3551,6914,6015,5764,6557,5569,6067,7852,7768,8140],
+  iss: [0,0,698,364,6592,6316,7186,6102,6649,8605,8513,8920],
+  rl:  [105969,93289,185169,157527,145304,167562,138819,154545,202421,196364,206725,228011],
+  cd:  [70743,61701,47654,47623,46455,46455,46455,38695,38695,38695,38695,38695],
+  om:  [22065,36671,22686,22635,22066,22066,22066,22066,22066,22066,22066,22066],
+  omOM:[14000,28608,14597,14597,14000,14000,14000,14000,14000,14000,14000,14000],
+  omVg:[482,480,480,491,482,482,482,482,482,482,482,482],
+  omTl:[258,258,258,258,258,258,258,258,258,258,258,258],
+  omAr:[7326,7326,7350,7288,7326,7326,7326,7326,7326,7326,7326,7326],
+  td:  [48678,25029,24969,24988,24389,24389,24389,16630,16630,16630,16630,16630],
+  mb:  [35225,31588,137515,109904,98849,121108,92365,115850,163725,157668,168029,189315],
+  dc:  [8959,3511,1751,1797,1992,2094,1781,1758,1750,1731,1812,1986],
+  da:  [13183,28209,18462,15280,1760,1760,1760,1760,1760,6517,6517,6517],
+  daC: [3000,1600,1600,1600,1600,1600,1600,1600,1600,1600,1600,1600],
+  daJ: [0,15000,0,600,0,0,0,0,0,0,0,0],
+  daS: [4757,4757,4757,0,0,0,0,0,0,4757,4757,4757],
+  daR: [3244,3728,11634,3093,0,0,0,0,0,0,0,0],
+  daO: [950,2744,0,9503,0,0,0,0,0,0,0,0],
+  do_: [6692,7108,10099,11246,6692,6692,6692,6692,6692,6692,6692,6692],
+  doPe:[5000,5000,5000,7300,5000,5000,5000,5000,5000,5000,5000,5000],
+  doOM:[749,749,749,749,749,749,749,749,749,749,749,749],
+  ebt: [6391,-7240,107203,81581,88405,110562,82132,105640,153524,142728,153008,174120],
+  dep: [44419,44419,44419,44419,44419,524364,44419,44419,44419,44419,533183,44419],
+  ebit:[-38027,-51659,62784,37162,43987,-413802,37713,61221,109105,98309,-380174,129701],
+  df:  [0,0,0,0,0,0,0,0,0,206503,0,0],
+  rf:  [0,0,0,0,0,0,0,0,0,0,0,0],
+  imp: [0,22313,0,30436,0,0,70267,0,0,65719,0,0],
+  ll:  [-38027,-73972,62784,6726,43987,-413802,-32554,61221,109105,-173912,-380174,129701]
+};
+const HOL={
+  rb:  [437763,19530,30920,32562,22456,22456,22456,22456,225325,267664,268276,318003],
+  pis: [13803,0,0,1129,1189,820,820,820,820,8224,9770,9792],
+  iss: [15127,0,0,1237,1302,898,898,898,898,9013,10707,10731],
+  rl:  [408833,19294,2525,32562,19965,20738,20738,20738,223607,250427,247799,297480],
+  cd:  [81713,80725,78367,84926,84631,84032,84032,84032,84032,84032,84032,84032],
+  om:  [35118,33886,31798,38211,38375,38375,38375,38375,38375,38375,38375,38375],
+  omOM:[18558,17616,15346,20316,20316,20316,20316,20316,20316,20316,20316,20316],
+  omVg:[8000,8000,8000,9498,9498,9498,9498,9498,9498,9498,9498,9498],
+  omTl:[291,0,291,236,291,291,291,291,291,291,291,291],
+  omAr:[8270,8270,8161,8161,8270,8270,8270,8270,8270,8270,8270,8270],
+  td:  [44657,45839,45570,45715,44657,44657,44657,44657,44657,44657,44657,44657],
+  txD3:[1939,1000,1000,1000,1599,1000,1000,1000,1000,1000,1000,1000],
+  mb:  [327119,-61431,-75842,-52364,-64666,-63294,-63294,-63294,139575,166395,163768,213449],
+  dc:  [188,126,206,703,188,188,188,188,188,188,188,188],
+  da:  [1695,2860,1710,3828,1640,1640,1640,1640,10877,10877,10877,10877],
+  daC: [1640,2860,1710,1710,1640,1640,1640,1640,1640,1640,1640,1640],
+  daO: [55,0,0,2118,0,0,0,0,0,0,0,0],
+  do_: [0,90,1308,0,0,0,0,0,0,0,0,0],
+  ebt: [325237,-64506,-79066,-56895,-66494,-65121,-65121,-65121,128510,155331,152703,202384],
+  dep: [127228,127228,131740,131740,131740,131740,131740,131740,131740,131740,131740,131740],
+  ebit:[198009,-191734,-210806,-188635,-198234,-196861,-196861,-196861,-3230,23591,20963,70644],
+  df:  [214613,64001,64153,96775,65408,64795,210999,63569,62956,62343,61730,61118],
+  rf:  [0,0,7936,4572,0,0,0,0,0,0,0,0],
+  imp: [126404,0,0,69479,0,0,8429,0,0,29402,0,0],
+  ll:  [-143009,-255736,-267023,-350317,-263641,-261656,-416290,-260431,-66186,-68154,-40767,9526]
+};
+const PROJ={
+  ci:  [44,698,599,25222,26222,12472,8855,10994,12097,11762,5934,4216],
+  en:  [0,0,0,0,0,0,0,0,0,0,0,64172],
+  sa:  [0,0,55500,39000,48750,88617,92861,53897,5336,5828,96718,0],
+  invH:[0,0,44500,39000,48750,45617,92861,53897,5336,5828,0,0],
+  invN:[0,0,0,0,0,43000,0,0,0,0,96718,0],
+  de:  [4347,99,377,0,5000,5000,5000,5000,5000,5000,5000,5000],
+  aD3: [5000,0,80500,40000,40000,90000,100000,60000,10000,5000,100000,0],
+  ro:  [-4347,-99,-55877,-39000,-53750,-93617,-97861,-58897,-10336,-10828,-101718,59172],
+  ra:  [-4302,599,-55278,-13778,-27528,-81145,-89006,-47903,1762,934,-95784,63387]
+};
+const NCF={
+  ci:  [60576,66968,37415,0,2694,91099,784,12649,118289,271812,142319,0],
+  res: [6391,-29553,107203,51145,88405,-369383,11865,105640,153524,-129494,-335755,174120],
+  apt: [0,0,0,0,0,86000,0,0,0,0,193437,0],
+  apD: [0,0,0,0,0,43000,0,0,0,0,96718,0],
+  apS: [0,0,0,0,0,43000,0,0,0,0,96718,0],
+  apl: [0,0,-144618,-48451,0,193068,0,0,0,0,0,0],
+  div: [0,0,0,0,0,0,0,0,0,0,0,124120],
+  cf:  [66968,37415,0,2694,91099,784,12649,118289,271812,142319,0,50000]
+};
+const HCF={
+  ci:  [15586,41876,5984,28615,58142,34345,0,0,0,0,0,4076],
+  res: [-98165,-210892,-222179,-305473,-218797,-216812,-371446,-215587,-21342,-23311,4076,54370],
+  apD: [0,0,44500,39000,48750,45617,92861,53897,5336,5828,0,0],
+  apS: [0,0,133500,117000,146250,136851,278584,161690,16007,17483,0,0],
+  apt: [0,0,178000,156000,195000,182468,371446,215587,21342,23311,0,0],
+  rf:  [8073,7559,0,0,0,0,0,0,0,0,0,0],
+  apl: [124454,175000,66810,179000,0,0,0,0,0,0,0,0],
+  div: [0,0,0,0,0,0,0,0,0,0,0,8447],
+  cf:  [41876,5984,28615,58142,34345,0,0,0,0,0,4076,50000],
+  cdb: [240000,65000,0,0,0,0,0,0,0,0,0,0],
+  bnb: [644793,644793,658478,484050,484050,484050,484050,484050,484050,484050,484050,484050],
+  tot: [926669,715777,687093,542193,518395,484050,484050,484050,484050,484050,488127,534050]
+};
+
+// ── HELPERS ───────────────────────────────────────────────────────
+const S=a=>a.reduce((x,y)=>x+(y||0),0);
+const inv=a=>a.map(v=>-v);
+function f(v){
+  if(v===null||v===undefined)return'—';
+  const a=Math.abs(v),s=a>=1e6?(a/1e6).toFixed(2)+'M':a>=1e3?(a/1e3).toFixed(0)+'K':a.toFixed(0);
+  return(v<0?'(':'')+s+(v<0?')':'');
+}
+function tFmt(v){const a=Math.abs(v),s=a>=1e6?(a/1e6).toFixed(1)+'M':a>=1e3?(a/1e3).toFixed(0)+'K':a.toFixed(0);return(v<0?'-':'')+s}
+const GC='rgba(255,255,255,.05)',GT='#8892a4';
+function bO(){return{responsive:true,maintainAspectRatio:false,animation:false,
+  plugins:{legend:{labels:{color:GT,font:{size:9},boxWidth:9}},tooltip:{callbacks:{label:c=>' R$'+f(c.raw)}}},
+  scales:{x:{ticks:{color:GT,font:{size:8}},grid:{color:GC}},y:{ticks:{color:GT,callback:tFmt},grid:{color:GC}}}
+}}
+const charts={};
+function mkBar(id,ds){if(charts[id])charts[id].destroy();charts[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels:M,datasets:ds},options:bO()});}
+function col(a,cR,cP){return a.map((v,i)=>v>=0?(i<C?cR:cP):'rgba(239,68,68,.65)')}
+function splitDs(data,cR,cP,label){return[
+  {label:label+' Real.',data:[...data.slice(0,C),...Array(8).fill(null)],backgroundColor:col(data.slice(0,C),cR,cR),borderRadius:3},
+  {label:label+' Prev.',data:[...Array(C).fill(null),...data.slice(C)],backgroundColor:col(data.slice(C),cP,cP),borderRadius:3}
+];}
+
+function neg(v){return v<0?'neg':v>0?'pos':''}
+const THD=`<tr><th style="min-width:165px;text-align:left">Indicador</th>
+  <th class="rh">Jan</th><th class="rh">Fev</th><th class="rh">Mar</th><th class="rh">Abr</th>
+  <th class="rh">Jan–Abr</th>
+  <th style="color:#fbbf24">Mai</th><th style="color:#fbbf24">Jun</th><th style="color:#fbbf24">Jul</th><th style="color:#fbbf24">Ago</th>
+  <th style="color:#fbbf24">Set</th><th style="color:#fbbf24">Out</th><th style="color:#fbbf24">Nov</th><th style="color:#fbbf24">Dez</th>
+  <th style="color:#fbbf24">Mai–Dez</th><th>Total</th></tr>`;
+
+function buildT(id,rows,lastIsValue){
+  const tbl=document.getElementById(id);
+  if(tbl.innerHTML)return; // já montado
+  const h=document.createElement('thead');h.innerHTML=THD;tbl.appendChild(h);
+  const tb=document.createElement('tbody');
+  rows.forEach(r=>{
+    if(r.sec){const tr=document.createElement('tr');tr.className='sec';tr.innerHTML=`<td colspan="16">${r.sec}</td>`;tb.appendChild(tr);return;}
+    const d=r.d,re=d.slice(0,4),pr=d.slice(4);
+    const sr=S(re),sp=S(pr),tot=r.nt?d[11]:sr+sp;
+    const tr=document.createElement('tr');if(r.sub)tr.className='sub';
+    let c=`<td class="${r.b?'bold':''}">${r.l}</td>`;
+    re.forEach(v=>c+=`<td class="${neg(v)}">${f(v)}</td>`);
+    c+=`<td class="rc ${neg(sr)}">${f(sr)}</td>`;
+    pr.forEach(v=>c+=`<td class="pc ${neg(v)}">${f(v)}</td>`);
+    c+=`<td class="pc ${neg(sp)}">${f(sp)}</td>`;
+    c+=`<td class="tc ${neg(tot)}">${f(tot)}</td>`;
+    tr.innerHTML=c;tb.appendChild(tr);
+  });
+  tbl.appendChild(tb);
+}
+
+// ── INIT POR ABA (lazy) ───────────────────────────────────────────
+function initC(){
+  mkBar('c_rb',[
+    ...splitDs(NEP.rb,'#4f7cff','rgba(79,124,255,.45)','Nepomuk'),
+    ...splitDs(HOL.rb,'#a855f7','rgba(168,85,247,.45)','Hollywood'),
+  ]);
+  mkBar('c_eb',[
+    ...splitDs(NEP.ebt,'#4f7cff','rgba(79,124,255,.45)','Nepomuk'),
+    ...splitDs(HOL.ebt,'#a855f7','rgba(168,85,247,.45)','Hollywood'),
+  ]);
+  buildT('tc',[
+    {sec:'RECEITA'},
+    {l:'Receita Bruta',d:NEP.rb.map((v,i)=>v+HOL.rb[i]),b:true},
+    {l:'(–) PIS/COFINS',d:inv(NEP.pis.map((v,i)=>v+HOL.pis[i])),sub:true},
+    {l:'(–) ISS',d:inv(NEP.iss.map((v,i)=>v+HOL.iss[i])),sub:true},
+    {l:'Receita Líquida',d:NEP.rl.map((v,i)=>v+HOL.rl[i]),b:true},
+    {sec:'CUSTOS DIRETOS'},
+    {l:'Custos Diretos',d:inv(NEP.cd.map((v,i)=>v+HOL.cd[i])),b:true},
+    {l:'O&M',d:inv(NEP.om.map((v,i)=>v+HOL.om[i])),sub:true},
+    {l:'TUSD',d:inv(NEP.td.map((v,i)=>v+HOL.td[i])),sub:true},
+    {l:'Margem Bruta',d:NEP.mb.map((v,i)=>v+HOL.mb[i]),b:true},
+    {sec:'DESPESAS'},
+    {l:'Desp. Comerciais',d:inv(NEP.dc.map((v,i)=>v+HOL.dc[i]))},
+    {l:'Desp. Administrativas',d:inv(NEP.da.map((v,i)=>v+HOL.da[i]))},
+    {l:'Desp. Operacionais',d:inv(NEP.do_.map((v,i)=>v+HOL.do_[i]))},
+    {sec:'RESULTADOS'},
+    {l:'EBITDA',d:NEP.ebt.map((v,i)=>v+HOL.ebt[i]),b:true},
+    {l:'(–) Depreciação / Amortização',d:inv(NEP.dep.map((v,i)=>v+HOL.dep[i]))},
+    {l:'EBIT',d:NEP.ebit.map((v,i)=>v+HOL.ebit[i])},
+    {l:'(–) Desp. Financeiras',d:inv(NEP.df.map((v,i)=>v+HOL.df[i]))},
+    {l:'(+) Rec. Financeiras',d:NEP.rf.map((v,i)=>v+HOL.rf[i])},
+    {l:'(–) Impostos',d:inv(NEP.imp.map((v,i)=>v+HOL.imp[i]))},
+    {l:'Lucro Líquido',d:NEP.ll.map((v,i)=>v+HOL.ll[i]),b:true},
+  ]);
+}
+
+function initN(){
+  mkBar('n_rb',[
+    ...splitDs(NEP.rb,'#4f7cff','rgba(245,158,11,.65)','Rec. Bruta'),
+    ...splitDs(NEP.ebt,'#22c55e','rgba(34,197,94,.5)','EBITDA'),
+  ]);
+  mkBar('n_ll',[...splitDs(NEP.ll,'#4f7cff','rgba(245,158,11,.65)','Lucro Líq.')]);
+  buildT('tn',[
+    {sec:'RECEITA'},
+    {l:'Receita Bruta',d:NEP.rb,b:true},
+    {l:'(–) PIS/COFINS',d:inv(NEP.pis),sub:true},
+    {l:'(–) ISS',d:inv(NEP.iss),sub:true},
+    {l:'Receita Líquida',d:NEP.rl,b:true},
+    {sec:'CUSTOS DIRETOS'},
+    {l:'Custos Diretos',d:inv(NEP.cd),b:true},
+    {l:'O&M',d:inv(NEP.om),sub:true},
+    {l:'  Contrato O&M',d:inv(NEP.omOM),sub:true},
+    {l:'  Vigilância',d:inv(NEP.omVg),sub:true},
+    {l:'  Telecomunicação',d:inv(NEP.omTl),sub:true},
+    {l:'  Arrendamento',d:inv(NEP.omAr),sub:true},
+    {l:'TUSD',d:inv(NEP.td),sub:true},
+    {l:'Margem Bruta',d:NEP.mb,b:true},
+    {sec:'DESPESAS'},
+    {l:'Desp. Comerciais (Comissão)',d:inv(NEP.dc)},
+    {l:'Desp. Administrativas',d:inv(NEP.da)},
+    {l:'  Contabilidade',d:inv(NEP.daC),sub:true},
+    {l:'  Jurídico',d:inv(NEP.daJ),sub:true},
+    {l:'  Seguros',d:inv(NEP.daS),sub:true},
+    {l:'  Reembolsos',d:inv(NEP.daR),sub:true},
+    {l:'  Outros',d:inv(NEP.daO),sub:true},
+    {l:'Desp. Operacionais',d:inv(NEP.do_)},
+    {l:'  Pessoal (Engenharia)',d:inv(NEP.doPe),sub:true},
+    {l:'  OMIE',d:inv(NEP.doOM),sub:true},
+    {sec:'RESULTADOS'},
+    {l:'EBITDA',d:NEP.ebt,b:true},
+    {l:'(–) Depreciação / Amortização',d:inv(NEP.dep)},
+    {l:'EBIT',d:NEP.ebit},
+    {l:'(–) Desp. Financeiras',d:inv(NEP.df)},
+    {l:'(+) Rec. Financeiras',d:NEP.rf},
+    {l:'(–) Impostos (CSLL+IRPJ)',d:inv(NEP.imp)},
+    {l:'Lucro Líquido',d:NEP.ll,b:true},
+  ]);
+}
+
+function initH(){
+  mkBar('h_rc',[
+    ...splitDs(HOL.rb,'#a855f7','rgba(245,158,11,.65)','Rec. Bruta'),
+    {label:'Custos Diretos',data:HOL.cd.map(v=>-v),backgroundColor:'rgba(239,68,68,.5)',borderRadius:3},
+  ]);
+  mkBar('h_eb',[...splitDs(HOL.ebt,'#a855f7','rgba(245,158,11,.65)','EBITDA')]);
+  buildT('th',[
+    {sec:'RECEITA'},
+    {l:'Receita Bruta',d:HOL.rb,b:true},
+    {l:'(–) PIS/COFINS',d:inv(HOL.pis),sub:true},
+    {l:'(–) ISS',d:inv(HOL.iss),sub:true},
+    {l:'Receita Líquida',d:HOL.rl,b:true},
+    {sec:'CUSTOS DIRETOS'},
+    {l:'Custos Diretos',d:inv(HOL.cd),b:true},
+    {l:'O&M',d:inv(HOL.om),sub:true},
+    {l:'  Contrato O&M',d:inv(HOL.omOM),sub:true},
+    {l:'  Vigilância',d:inv(HOL.omVg),sub:true},
+    {l:'  Telecomunicação',d:inv(HOL.omTl),sub:true},
+    {l:'  Arrendamento',d:inv(HOL.omAr),sub:true},
+    {l:'TUSD',d:inv(HOL.td),sub:true},
+    {l:'  Taxa D3',d:inv(HOL.txD3),sub:true},
+    {l:'Margem Bruta',d:HOL.mb,b:true},
+    {sec:'DESPESAS'},
+    {l:'Desp. Comerciais (Comissão)',d:inv(HOL.dc)},
+    {l:'Desp. Administrativas',d:inv(HOL.da)},
+    {l:'  Contabilidade',d:inv(HOL.daC),sub:true},
+    {l:'  Outros',d:inv(HOL.daO),sub:true},
+    {l:'Desp. Operacionais',d:inv(HOL.do_)},
+    {sec:'RESULTADOS'},
+    {l:'EBITDA',d:HOL.ebt,b:true},
+    {l:'(–) Depreciação / Amortização',d:inv(HOL.dep)},
+    {l:'EBIT',d:HOL.ebit},
+    {l:'(–) Desp. Financeiras',d:inv(HOL.df)},
+    {l:'(+) Rec. Financeiras',d:HOL.rf},
+    {l:'(–) Impostos (CSLL+IRPJ)',d:inv(HOL.imp)},
+    {l:'Lucro Líquido',d:HOL.ll,b:true},
+  ]);
+}
+
+function initP(){
+  mkBar('p_rs',[...splitDs(PROJ.ro,'#22c55e','rgba(245,158,11,.65)','Resultado Op.')]);
+  mkBar('p_iv',[
+    {label:'Realizado',data:[...PROJ.sa.slice(0,C),...Array(8).fill(null)],backgroundColor:'rgba(239,68,68,.65)',borderRadius:3},
+    {label:'Previsto',data:[...Array(C).fill(null),...PROJ.sa.slice(C)],backgroundColor:'rgba(245,158,11,.55)',borderRadius:3},
+  ]);
+  buildT('tp',[
+    {sec:'CAIXA'},
+    {l:'Caixa Inicial',d:PROJ.ci,nt:true},
+    {sec:'ENTRADAS'},
+    {l:'(+) Dividendos / Vendas',d:PROJ.en},
+    {sec:'SAÍDAS — INVESTIMENTOS'},
+    {l:'(–) Investimentos em Hollywood',d:inv(PROJ.invH)},
+    {l:'(–) Investimentos em Nepomuk',d:inv(PROJ.invN)},
+    {sec:'DESPESAS'},
+    {l:'(–) Despesas Administrativas',d:inv(PROJ.de)},
+    {sec:'RESULTADOS'},
+    {l:'(=) Resultado Operacional',d:PROJ.ro,b:true},
+    {l:'(=) Resultado Acumulado',d:PROJ.ra,b:true,nt:true},
+    {sec:'FINANCEIRO'},
+    {l:'(+) Aportes Recebidos (D3 Trading)',d:PROJ.aD3},
+  ]);
+}
+
+function initFC(){
+  mkBar('fc_cx',[
+    ...splitDs(NCF.cf,'#4f7cff','rgba(79,124,255,.45)','Nepomuk'),
+    ...splitDs(HCF.cf,'#a855f7','rgba(168,85,247,.45)','Hollywood'),
+  ]);
+  mkBar('fc_ap',[
+    ...splitDs(HCF.apD,'rgba(239,68,68,.7)','rgba(245,158,11,.55)','D3→Hollywood'),
+    ...splitDs(NCF.apD,'rgba(79,124,255,.7)','rgba(79,124,255,.35)','D3→Nepomuk'),
+  ]);
+  buildT('tnfc',[
+    {sec:'CAIXA'},
+    {l:'(=) Caixa Inicial',d:NCF.ci,b:true,nt:true},
+    {sec:'RESULTADO DO PERÍODO'},
+    {l:'(+/–) Resultado do Período',d:NCF.res},
+    {sec:'MOVIMENTAÇÕES'},
+    {l:'(+) Aportes Recebidos',d:NCF.apt},
+    {l:'    Aporte D3 Projetos',d:NCF.apD,sub:true},
+    {l:'    Aporte Sebastião',d:NCF.apS,sub:true},
+    {l:'(+/–) Aplicações / Resgates',d:NCF.apl},
+    {l:'(–) Dividendos Distribuídos',d:inv(NCF.div)},
+    {sec:'SALDO'},
+    {l:'(=) Caixa Final',d:NCF.cf,b:true,nt:true},
+  ]);
+  buildT('thfc',[
+    {sec:'CAIXA'},
+    {l:'(=) Caixa Inicial',d:HCF.ci,b:true,nt:true},
+    {sec:'RESULTADO DO PERÍODO'},
+    {l:'(+/–) Resultado do Período',d:HCF.res},
+    {sec:'MOVIMENTAÇÕES'},
+    {l:'(+) Aportes Recebidos',d:HCF.apt},
+    {l:'    Aporte D3 Projetos',d:HCF.apD,sub:true},
+    {l:'    Aporte Sócios',d:HCF.apS,sub:true},
+    {l:'(+) Receitas Financeiras',d:HCF.rf},
+    {l:'(+) Resgates de Aplicação',d:HCF.apl},
+    {l:'(–) Dividendos Distribuídos',d:inv(HCF.div)},
+    {sec:'SALDO CAIXA'},
+    {l:'(=) Caixa Final',d:HCF.cf,b:true,nt:true},
+    {sec:'APLICAÇÕES FINANCEIRAS'},
+    {l:'Conta Investimento CDB',d:HCF.cdb,nt:true},
+    {l:'Aplicação BNB Nordeste',d:HCF.bnb,nt:true},
+    {l:'Total Aplicações',d:HCF.tot,b:true,nt:true},
+  ]);
+  buildT('tifc',[
+    {sec:'D3 PROJETOS'},
+    {l:'Caixa Inicial',d:PROJ.ci,nt:true},
+    {l:'(+) Dividendos Recebidos',d:PROJ.en},
+    {l:'(–) Investimento → Hollywood',d:inv(PROJ.invH)},
+    {l:'(–) Investimento → Nepomuk',d:inv(PROJ.invN)},
+    {l:'(–) Despesas Administrativas',d:inv(PROJ.de)},
+    {l:'(+) Aportes D3 Trading',d:PROJ.aD3},
+    {l:'(=) Resultado Acumulado D3',d:PROJ.ra,b:true,nt:true},
+    {sec:'NEPOMUK'},
+    {l:'Caixa Inicial',d:NCF.ci,nt:true},
+    {l:'(+/–) Resultado do Período',d:NCF.res},
+    {l:'(+) Aportes (D3 + Sebastião)',d:NCF.apt},
+    {l:'(+/–) Aplicações / Resgates',d:NCF.apl},
+    {l:'(–) Dividendos',d:inv(NCF.div)},
+    {l:'(=) Caixa Final Nepomuk',d:NCF.cf,b:true,nt:true},
+    {sec:'HOLLYWOOD II'},
+    {l:'Caixa Inicial',d:HCF.ci,nt:true},
+    {l:'(+/–) Resultado do Período',d:HCF.res},
+    {l:'(+) Aportes (D3 + Sócios)',d:HCF.apt},
+    {l:'(+) Receitas Financeiras',d:HCF.rf},
+    {l:'(+) Resgates Aplicação',d:HCF.apl},
+    {l:'(–) Dividendos',d:inv(HCF.div)},
+    {l:'(=) Caixa Final Hollywood',d:HCF.cf,b:true,nt:true},
+    {l:'(+) Total Aplicações Hollywood',d:HCF.tot,b:true,nt:true},
+    {sec:'POSIÇÃO FINANCEIRA DO GRUPO'},
+    {l:'Caixa D3 Projetos',d:PROJ.ra,nt:true},
+    {l:'Caixa Nepomuk',d:NCF.cf,nt:true},
+    {l:'Caixa Hollywood',d:HCF.cf,nt:true},
+    {l:'(=) Caixa Total do Grupo',d:PROJ.ra.map((v,i)=>v+NCF.cf[i]+HCF.cf[i]),b:true,nt:true},
+    {l:'(+) Aplicações Hollywood',d:HCF.tot,nt:true},
+    {l:'(=) Posição Financeira Total',d:PROJ.ra.map((v,i)=>v+NCF.cf[i]+HCF.cf[i]+HCF.tot[i]),b:true,nt:true},
+  ]);
+}
+
+// ── NAVEGAÇÃO LAZY ────────────────────────────────────────────────
+const done={};
+function ST(name,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(!done[name]){done[name]=true;
+    if(name==='c')initC();
+    if(name==='n')initN();
+    if(name==='h')initH();
+    if(name==='p')initP();
+    if(name==='fc')initFC();
+  }
+}
+// Consolidado primeiro
+setTimeout(()=>{done['c']=true;initC();},50);
+</script>
+</body>
+</html>
